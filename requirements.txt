@@ -1,0 +1,6 @@
+#
+# Speedr requirements
+#
+Flask
+schedule
+speedtest-cli
