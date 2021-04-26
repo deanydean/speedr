@@ -5,6 +5,7 @@
 
 from flask import Flask
 import json
+import os
 import schedule
 import speedtest
 import threading
@@ -18,6 +19,8 @@ data = {
 }
 
 running_checks = None
+
+check_interval = int(os.getenv('SPEEDR_CHECK_INTERVAL', 30))
 
 @app.route('/')
 def speedr_summary():
@@ -39,12 +42,12 @@ def speedr_api_speed():
 @app.route('/metrics')
 def speedr_metrics():
     return f"""
-        # HELP speedr_download_speed A value in bit/second of the latest measured download speed.
-        # TYPE speedr_download_speed gauge
-        speedr_download_speed={data["download_speed"]}
-        # HELP speedr_upload_speed A value in bit/second of the latest measured upload speed.
-        # TYPE speedr_upload_speed gauge
-        speedr_upload_speed={data["upload_speed"]}
+# HELP speedr_download_speed A value in bit/second of the latest measured download speed.
+# TYPE speedr_download_speed gauge
+speedr_download_speed {data["download_speed"]}
+# HELP speedr_upload_speed A value in bit/second of the latest measured upload speed.
+# TYPE speedr_upload_speed gauge
+speedr_upload_speed {data["upload_speed"]}
     """
 
 def check_speed():
@@ -55,8 +58,8 @@ def check_speed():
     speed_test.upload()
     result = speed_test.results.dict()
 
-    data["download_speed"] = result["download"]
-    data["upload_speed"] = result["upload"]
+    data["download_speed"] = int(result["download"])
+    data["upload_speed"] = int(result["upload"])
     print(data)
 
 def check_every_minutes(minutes):
@@ -76,4 +79,4 @@ def check_every_minutes(minutes):
     return
 
 check_speed()
-check_every_minutes(5)
+check_every_minutes(check_interval)
