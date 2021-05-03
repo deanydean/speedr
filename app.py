@@ -8,6 +8,7 @@ import json
 import os
 import schedule
 import speedtest
+import sys
 import threading
 import time
 
@@ -51,16 +52,19 @@ speedr_upload_speed {data["upload_speed"]}
     """
 
 def check_speed():
-    print("Checking speed....")
-    speed_test = speedtest.Speedtest()
-    speed_test.get_best_server()
-    speed_test.download()
-    speed_test.upload()
-    result = speed_test.results.dict()
+    try:
+        print("Checking speed....")
+        speed_test = speedtest.Speedtest()
+        speed_test.get_best_server()
+        speed_test.download()
+        speed_test.upload()
+        result = speed_test.results.dict()
 
-    data["download_speed"] = int(result["download"])
-    data["upload_speed"] = int(result["upload"])
-    print(data)
+        data["download_speed"] = int(result["download"])
+        data["upload_speed"] = int(result["upload"])
+        print(data)
+    except:
+        print("Failed to check speed: ", sys.exc_info()[0])
 
 def check_every_minutes(minutes):
     schedule.every(minutes).minutes.do(check_speed)
