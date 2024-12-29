@@ -1,0 +1,12 @@
+[Unit]
+Description=Speedr Internet Speed Checker Service
+After=network-online.target
+
+[Service]
+User=speedr
+Restart=on-failure
+WorkingDirectory=/opt/speedr
+ExecStart=/usr/local/bin/flask run --host=0.0.0.0 --port=5000
+
+[Install]
+WantedBy=multi-user.target
