@@ -54,7 +54,7 @@ speedr_upload_speed {data["upload_speed"]}
 def check_speed():
     try:
         print("Checking speed....")
-        speed_test = speedtest.Speedtest()
+        speed_test = speedtest.Speedtest(secure=True)
         speed_test.get_best_server()
         speed_test.download()
         speed_test.upload()
@@ -66,21 +66,20 @@ def check_speed():
     except:
         print("Failed to check speed: ", sys.exc_info()[0])
 
-def check_every_minutes(minutes):
-    schedule.every(minutes).minutes.do(check_speed)
-
-    running_checks = threading.Event()
+def schedule_checks():
+    schedule.every(check_interval).minutes.do(check_speed)
+    stop_running = threading.Event()
 
     class ScheduleThread(threading.Thread):
-        @classmethod
-        def run(cls):
-            while not running_checks.is_set():
+        def run(self):
+            while not stop_running.is_set():
                 schedule.run_pending()
-                time.sleep(10)
+                sleep_for = schedule.idle_seconds()
+                print(f"Running next check in {sleep_for} seconds")
+                time.sleep(sleep_for if sleep_for is not None else 1)
 
-    continuous_thread = ScheduleThread()
-    continuous_thread.start()
-    return
+    checks_thread = ScheduleThread()
+    checks_thread.start()
 
 check_speed()
-check_every_minutes(check_interval)
+schedule_checks()
